@@ -74,6 +74,7 @@ transition_function_ecosystem <- function(ecosystem_states,
                                           DEP_EFFECT,
                                           sik_bar,
                                           sigma_eco){
+  min_prob <- 0.01
   N_ecosystem <- length(ecosystem_states)
   transition_ecosystem <- list()
   for (index_action in seq(length(DEP_EFFECT))){
@@ -88,7 +89,7 @@ transition_function_ecosystem <- function(ecosystem_states,
 
       for (i in seq(2, length(ecosystem_states))){
 
-        transition_ecosystem_index_action[i,1, index_temp] <-
+        transition_ecosystem_index_action[i,1, index_temp] <- min_prob+
           pnorm(log(ecosystem_states[1]+1/(2*(N_ecosystem-1))),
                 mean = log(sik_bar[i, index_temp,index_action]),
                 sd =sigma_eco)
@@ -99,7 +100,7 @@ transition_function_ecosystem <- function(ecosystem_states,
             print(j)
             break
           }
-          transition_ecosystem_index_action[i,j, index_temp] <-
+          transition_ecosystem_index_action[i,j, index_temp] <- min_prob+
             pnorm(log(ecosystem_states[j]+1/(2*(N_ecosystem-1))),
                    mean = log(sik_bar[i, index_temp,index_action]),
                    sd =sigma_eco)-

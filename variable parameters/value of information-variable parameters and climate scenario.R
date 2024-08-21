@@ -12,7 +12,7 @@ source("variable parameters/functions variable parameters - MDP.R")
 #######################################
 
 ## discrete ecosystem states ####
-N_ecosystem <- 5
+N_ecosystem <- 10
 ecosystem_states <- seq(0,1,1/N_ecosystem)
 sigma_eco <- 0.2
 
@@ -138,8 +138,10 @@ for (index_MDP_true in seq(nrow(all_scenarios))){
                                             solution_list[[index_MDP_test]]$policy)
     voi_data_current <- data.frame(index_MDP_true=index_MDP_true,
                                    index_MDP_test=index_MDP_test,
-                                   max_value=solution_list[[index_MDP_true]]$V[seq(length(ecosystem_states))],
-                                   test_value=solution_test[seq(length(ecosystem_states))]
+                                   # max_value=solution_list[[index_MDP_true]]$V[seq(length(ecosystem_states))],
+                                   # test_value=solution_test[seq(length(ecosystem_states))]
+                                   max_value=solution_list[[index_MDP_true]]$V[length(ecosystem_states)],
+                                   test_value=solution_test[length(ecosystem_states)]
     )
 
     voi_data <- rbind(voi_data,
@@ -157,10 +159,12 @@ voi_data_analysis <- voi_data %>%
          test_IPCC = all_scenarios$scenario[index_MDP_test],
   )%>%
   group_by(index_MDP_true, index_MDP_test)%>%
+  summarize(max_value = mean(max_value),
+            test_value = mean(test_value)) %>%
+  mutate(r_EVPI=((max_value-test_value)/max_value))
   # group_by(true_IPCC, test_IPCC)%>%
   # group_by(true_delta_crit, test_delta_crit)%>%
-  filter(max_value>0)%>%
-  summarize(r_EVPI=mean((max_value-test_value)/max_value))
+  # filter(max_value>0)%>%
 
 breaks_countour_r_EVPI <- seq(0.1,1,0.1)
 voi_plot <- voi_data_analysis %>%
@@ -172,14 +176,31 @@ voi_plot <- voi_data_analysis %>%
   theme_minimal() +
   coord_equal()+
   labs(title = "",
-       x = TeX("True $\\Delta T_{crit}$"),
-       y = TeX("Assumed $\\Delta T_{crit}$"),
-       fill = "rEVPI (%)")
+       x = "True scenario",
+       y = "Assumed scenario",
+       fill = "rEVPI (%)")+
+  theme(
+    axis.text.x = element_blank(),   # Remove x-axis text
+    axis.text.y = element_blank(),   # Remove y-axis text
+    axis.ticks = element_blank(),    # Remove axis ticks
+    axis.line = element_blank(),      # Remove axis lines
+    panel.grid.major = element_blank(), # Remove major grid lines
+    panel.grid.minor = element_blank()
+  )
 
 for (k in seq(0,length(unique(temperature_data$scenario)))){
   voi_plot <- voi_plot+
   geom_vline(xintercept = length(tested_delta_t_crit_K)*(k)+0.5)+
   geom_hline(yintercept = length(tested_delta_t_crit_K)*(k)+0.5)
+}
+for (k in seq(length(unique(all_scenarios$scenario)))){
+  scenario_text <- unique(all_scenarios$scenario)[k]
+  if (scenario_text!="all"){
+    position_text <- length(tested_delta_t_crit_K)*(k-1/2)+0.5
+    voi_plot <- voi_plot+
+      annotate("text", x=position_text, y=-1,label=scenario_text)+
+      annotate("text", y=position_text, x=-1,label=scenario_text, angle=90)
+  }
 }
 voi_plot
 
@@ -191,6 +212,24 @@ voi_data_best_policy <- voi_data_analysis %>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
 voi_data_best_policy
+
+density_plot <- voi_data_analysis %>%
+  filter(index_MDP_test %in% voi_data_best_policy$index_MDP_test[c(1,5)]
+         # index_MDP_test %in% tail(voi_data_best_policy,n=2)$index_MDP_test
+         )%>%
+  ggplot(aes(x = r_EVPI, color = factor(index_MDP_test), fill = factor(index_MDP_test))) +
+  geom_density(alpha = 0.4) +  # Adjust alpha for transparency
+  labs(
+    title = "Density Plot of r_EVPI for each index_MDP_test",
+    x = "r_EVPI",
+    y = "Density",
+    color = "Index MDP Test",
+    fill = "Index MDP Test"
+  ) +
+  facet_wrap(~ index_MDP_test, ncol = 2) +  # Each density plot on a different row
+  theme_minimal()
+
+density_plot
 ## policies ####
 values_df <- data.frame()
 names_df <- expand.grid(states=ecosystem_states,
