@@ -35,13 +35,14 @@ res_file <- "voi_POMDP_pars_climate.csv"
 
 for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
   TRUE_MODEL <- true_scenario
-  print(TRUE_MODEL)
   for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
-    # Create a cluster
-    cl <- makeCluster(ncores)
+    print(paste(TRUE_MODEL, "-", test_scenario))
 
     B_PAR_TEST <- rep(0, length(TR_FUNCTION_ECO))
     B_PAR_TEST[test_scenario] <- 1
+
+    # Create a cluster
+    cl <- makeCluster(ncores)
 
     # Export necessary variables to the cluster
     clusterExport(cl, c("N_ecosystem", "B_PAR_TEST", "B_PAR_TECH",
@@ -61,10 +62,28 @@ for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
     # Combine the results if needed
     # For example, if results are lists, you can combine them with do.call(rbind, results)
     results <- bind_rows(results, .id = "sim")
-    results$true_scenario <- true_scenario
-    results$test_scenario <- test_scenario
 
-    write.table(results, res_file,
+    summ_results <- results %>%
+      rowwise() %>%
+      mutate(state_year=index_to_year(state_eco, N_ecosystem+1),
+             state_ecosystem=index_to_eco(state_eco,N_ecosystem+1))%>%
+      mutate(state_ecosystem=ecosystem_states[state_ecosystem],
+             action=action-1)%>%
+      group_by(time)%>%
+      summarise(mean_ecosystem = mean(state_ecosystem),
+                sd_ecosystem = sd(state_ecosystem),
+                mean_action=mean(action),
+                sd_action=sd(action),
+                upper_action=min(mean_action+sd_action, 1),
+                lower_action=max(mean_action-sd_action, 0),
+                mean_value=mean(value),
+                sd_value=sd(value)
+      )
+
+    summ_results$true_scenario <- true_scenario
+    summ_results$test_scenario <- test_scenario
+
+    write.table(summ_results, res_file,
                 append = TRUE,
                 sep = ",",
                 col.names = FALSE,
@@ -75,69 +94,3 @@ for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
 
 
 
-summ_results <- results %>%
-  rowwise() %>%
-  mutate(state_year=index_to_year(state_eco, N_ecosystem+1),
-         state_ecosystem=index_to_eco(state_eco,N_ecosystem+1))%>%
-  mutate(state_ecosystem=ecosystem_states[state_ecosystem],
-         action=action-1)%>%
-  group_by(time)%>%
-  summarise(mean_ecosystem = mean(state_ecosystem),
-            sd_ecosystem = sd(state_ecosystem),
-            mean_action=mean(action),
-            sd_action=sd(action),
-            upper_action=min(mean_action+sd_action, 1),
-            lower_action=max(mean_action-sd_action, 0),
-            mean_value=mean(value),
-            sd_value=sd(value)
-  )
-
-states <- summ_results %>%
-  ggplot()+
-  geom_line(aes(x=(time)*time_step,
-                y=(mean_ecosystem)))+
-  labs(
-    x="time (yrs)",
-    y="ecosystem state"
-  )+
-  geom_ribbon(aes(x = time * time_step,
-                  ymax=mean_ecosystem+sd_ecosystem,
-                  ymin=mean_ecosystem-sd_ecosystem),
-              fill = "blue",
-              alpha = 0.2)+
-  theme_minimal()
-
-values <- summ_results %>%
-  ggplot()+
-  geom_line(aes(x=(time)*time_step,
-                y=(mean_value)))+
-  labs(
-    x="time (yrs)",
-    y="value"
-  )+
-  geom_ribbon(aes(x = time * time_step,
-                  ymax=mean_value+sd_value,
-                  ymin=mean_value-sd_value),
-              fill = "blue",
-              alpha = 0.2)+
-  theme_minimal()
-
-actions <- summ_results %>% ggplot()+
-  geom_line(aes(x=(time)*time_step,
-                 y=mean_action))+
-  labs(
-    x="time (yrs)",
-    col="action",
-    y=""
-  )+
-  geom_ribbon(aes(x = time * time_step,
-                  ymax=upper_action,
-                  ymin=lower_action),
-              fill = "blue",
-              alpha = 0.2)+
-  theme_minimal()
-
-ggarrange(states,
-          actions,
-          values,
-          ncol=1)
