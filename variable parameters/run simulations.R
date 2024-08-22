@@ -4,17 +4,18 @@ library(tidyr)
 library(ggpubr)
 source("deployment POMDP/read_solutions.R")
 source("variable parameters/simulations.R")
-# alphas <- read_policyx2(OUTPUT_FILE)
+alphas <- read_policyx2(OUTPUT_FILE)
 
 data <- trajectory(state_prior_eco = tuple_to_index(1,
                                                     N_ecosystem+1,
                                                     N_ecosystem+1),
                    state_prior_tech = 1,
-                   Tmax=150,
-                   initial_belief_state = B_PAR,
+                   Tmax=85,
+                   # initial_belief_state = B_PAR,
                    # initial_belief_state = c(0.99,0.01),
                    # initial_belief_state = c(0.01,0.99),
-                   # initial_belief_state = c(0,1),
+                   initial_belief_state = c(0,1),
+                   # initial_belief_state = c(1,0),
                    initial_belief_state_tech = B_PAR_TECH,
                    transition_ecosystem=TR_FUNCTION_ECO,
                    transition_tech = TR_FUNCTION_TECH,

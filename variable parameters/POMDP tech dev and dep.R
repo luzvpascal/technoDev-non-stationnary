@@ -42,7 +42,7 @@ OUTPUT_FILE <- paste0(file_name, ".policyx")
 
 cmd <- paste(path_to_sarsop,
              "--precision", 0.0000001,
-             "--timeout", 600,
+             "--timeout",3600,
              "--output", OUTPUT_FILE,
              FILE,
              sep=" ")

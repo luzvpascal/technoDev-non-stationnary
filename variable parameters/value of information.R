@@ -12,14 +12,14 @@ source("variable parameters/functions variable parameters - MDP.R")
 #######################################
 
 ## discrete ecosystem states ####
-N_ecosystem <- 20
+N_ecosystem <- 10
 ecosystem_states <- seq(0,1,1/N_ecosystem)
 sigma_eco <- 0.2
 
 ## transition temperatures ####
 temperature_data <- read.csv("data IPCC/summarized_data.csv")
 temperature_data <- filter(temperature_data,
-                                  scenario == "Historical"|scenario=="SSP2_4_5")
+                                  scenario=="SSP2_4_5")
                                   # scenario == "Historical"|scenario=="SSP5_8_5")
                                   # scenario=="SSP5_8_5")
 temperature_data$Year <- temperature_data$Year-min(temperature_data$Year)+1
