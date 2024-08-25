@@ -14,27 +14,26 @@ belief <- function(belief_mod,belief_tech){
   a <- matrix(belief_tech, ncol=1)
   b <- matrix(belief_mod, nrow=1)
   belief <- c(a%*%b) #double check
-  return(belief)
+return(belief)
 }
 
-update_belief_mod <- function(transition_ecosystem,
-                              current_state,
-                              next_state,
-                              current_action,
-                              current_belief_mod){
+update_belief_mod <- function(transition_temperatures,
+                          current_time,
+                          next_temp,
+                          current_belief_mod){
   next_belief <- rep(0, length(current_belief_mod))
-  for (mod in seq(length(transition_ecosystem))){
-    next_belief[mod] <- transition_ecosystem[[mod]][current_state,next_state,current_action]*current_belief_mod[mod]
+  for (mod in seq(length(transition_temperatures))){
+    next_belief[mod] <- transition_temperatures[[mod]][current_time,next_temp]*current_belief_mod[mod]
   }
   next_belief <- next_belief/sum(next_belief)
   return(next_belief)
 }
 
 update_belief_tech <- function(transition_tech,
-                               current_state_tech,
-                               next_state_tech,
-                               current_action,
-                               current_belief_tech){
+                              current_state_tech,
+                              next_state_tech,
+                              current_action,
+                              current_belief_tech){
   next_belief <- rep(0, length(current_belief_tech))
   for (mod in seq(length(transition_tech))){
     next_belief[mod] <- transition_tech[[mod]][[current_action]][current_state_tech,next_state_tech]*current_belief_tech[mod]
@@ -43,9 +42,9 @@ update_belief_tech <- function(transition_tech,
   return(next_belief)
 }
 
-update_belief <- function(transition_ecosystem,
-                          current_state,
-                          next_state,
+update_belief <- function(transition_temperatures,
+                          current_time,
+                          next_temp,
                           current_belief_mod,
                           transition_tech,
                           current_state_tech,
@@ -53,36 +52,38 @@ update_belief <- function(transition_ecosystem,
                           current_action,
                           current_belief_tech){
 
-  next_belief_mod <- update_belief_mod(transition_ecosystem,
-                                       current_state,
-                                       next_state,
-                                       current_action,
+  next_belief_mod <- update_belief_mod (transition_temperatures,
+                                       current_time,
+                                       next_temp,
                                        current_belief_mod)
-
   next_belief_tech <- update_belief_tech(transition_tech,
                                          current_state_tech,
                                          next_state_tech,
                                          current_action,
                                          current_belief_tech)
-
   next_belief <- belief(next_belief_mod, next_belief_tech)
   return(next_belief)
 }
 
-
-factored_state <- function(state_eco, state_tech,
-                           Num_s_eco, Num_s_tech){
-  return(state_tech + Num_s_tech*(state_eco-1))
+factored_state <- function(state_eco, state_temp, state_time, state_tech,
+                           Num_s_eco, Num_s_temp, Num_s_time, Num_s_tech){
+  return(state_tech + Num_s_tech*(state_time-1) +
+           Num_s_tech*Num_s_time*(state_temp-1) +
+           Num_s_tech*Num_s_time*Num_s_temp*(state_eco-1))
 }
 
 trajectory <- function(state_prior_eco,
+                       state_prior_temp,
+                       state_prior_time,
                        state_prior_tech,
                        Tmax,
                        initial_belief_state,
                        initial_belief_state_tech,
                        transition_ecosystem,
+                       transition_temperatures,
+                       transition_time,
                        transition_tech,
-                       reward,
+                       reward_time_list,
                        true_model,
                        true_model_tech,
                        alpha_momdp,
@@ -121,11 +122,13 @@ trajectory <- function(state_prior_eco,
   Num_mod_tech <- length(initial_belief_state_tech)
 
   #number of states
-  Num_s_eco <- dim(transition_ecosystem[[1]])[1]
+  Num_s_eco <- nrow(transition_ecosystem[[1]][[1]])
+  Num_s_temp <- ncol(transition_temperatures[[1]])
+  Num_s_time <- nrow(transition_time)
   Num_s_tech <- nrow(transition_tech[[1]][[1]])
-  Num_s <- Num_s_eco*Num_s_tech
+  Num_s <- Num_s_eco*Num_s_temp*Num_s_time*Num_s_tech
 
-  Num_a <- dim(transition_ecosystem[[1]])[3]
+  Num_a <- length(transition_ecosystem)
   #initialise sequence of actions and rewards
   actions <- c()
   V <- c(0) #initial reward is 0
@@ -133,10 +136,12 @@ trajectory <- function(state_prior_eco,
   if (alpha_indexes){indexes <- c()}
 
   state_eco <- state_prior_eco
+  state_temp <- state_prior_temp
+  state_time <- state_prior_time
   state_tech <- state_prior_tech
 
-  state_current <- factored_state(state_eco, state_tech,
-                                  Num_s_eco, Num_s_tech)
+  state_current <- factored_state(state_eco, state_temp, state_time,state_tech,
+                                  Num_s_eco, Num_s_temp, Num_s_time,Num_s_tech)
 
   mod_probs_mod <- matrix(initial_belief_state, nrow = 1)
   mod_probs_tech <- matrix(initial_belief_state_tech, nrow = 1)
@@ -161,14 +166,24 @@ trajectory <- function(state_prior_eco,
     }
 
     #update reward
-    V <- c(V, V[i] + disc**(i-1)*reward[state_eco[i], actions[i]])
+    V <- c(V, V[i] + disc**(i-1)*reward_time_list[[state_time[i]]][state_eco[i],
+                                                                   actions[i]])
 
     #next observation given belief, action and obs
     set.seed(as.integer((as.double(Sys.time()) *i*1000 + Sys.getpid())%%2^31))
 
     state_eco <- c(state_eco,
                    sample(seq(Num_s_eco), size=1, replace = TRUE,
-                          prob = c(transition_ecosystem[[true_model]][state_eco[i], ,actions[i]])))
+                   prob = c(transition_ecosystem[[actions[i]]][[state_temp[i]]][state_eco[i],])))
+
+    #transition depends on time here
+    state_temp <- c(state_temp,
+                   sample(seq(Num_s_temp), size=1, replace = TRUE,
+                          prob = c(transition_temperatures[[true_model]][state_time[i],])))
+
+    state_time <- c(state_time,
+                    sample(seq(Num_s_time), size=1, replace = TRUE,
+                           prob = c(transition_time[state_time[i],])))
 
     state_tech <- c(state_tech,
                     sample(seq(Num_s_tech), size=1, replace = TRUE,
@@ -176,8 +191,10 @@ trajectory <- function(state_prior_eco,
 
     state_current <- c(state_current,
                        factored_state(state_eco[i+1],
+                                      state_temp[i+1],
+                                      state_time[i+1],
                                       state_tech[i+1],
-                                      Num_s_eco, Num_s_tech))
+                                      Num_s_eco, Num_s_temp, Num_s_time, Num_s_tech))
 
     #update beliefs
 
@@ -187,9 +204,9 @@ trajectory <- function(state_prior_eco,
     current_belief_tech <- belief_tech(mod_probs[i,], Num_mod_tech)
 
     #
-    belief_state <- update_belief(transition_ecosystem,
-                                  state_eco[i],
-                                  state_eco[i+1],
+    belief_state <- update_belief(transition_temperatures,
+                                  state_time[i],
+                                  state_temp[i+1],
                                   current_belief_mod,
                                   transition_tech,
                                   state_tech[i],
@@ -203,6 +220,8 @@ trajectory <- function(state_prior_eco,
   }
 
   data_output <- data.frame(state_eco=state_eco)
+  data_output$state_temp <- state_temp
+  data_output$state_time <- state_time
   data_output$state_tech <- state_tech
   data_output$state_current <- state_current
   data_output$value <- V
