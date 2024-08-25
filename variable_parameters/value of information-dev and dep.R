@@ -8,7 +8,7 @@ source("deployment POMDP/read_solutions.R")
 source("variable_parameters/simulations.R")
 source("variable_parameters/write_POMDPx.R")
 
-source("variable parameters/value of information-dep.R")
+source("variable_parameters/value of information-dep.R")
 
 ## useful functions####
 # Define the function to run a single simulation
