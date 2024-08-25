@@ -5,7 +5,7 @@ library(latex2exp)
 library(MDPtoolbox)
 
 #load necessary functions ####
-source("variable parameters/functions variable parameters - MDP.R")
+source("variable_parameters/functions variable parameters - MDP.R")
 
 #######################################
 # define common parameters of model####
