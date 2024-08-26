@@ -82,15 +82,15 @@ for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
   ## solve POMDP for assumed scenario ####
   FILE <- paste0(file_name, test_scenario, ".pomdpx")
 
-  write_full_POMDP(list(TR_FUNCTION_ECO[[test_scenario]]),
-                   TR_FUNCTION_TECH,
-                   B_FULL_ECO,
-                   B_FULL_TECH,
-                   B_PAR,
-                   B_PAR_TECH,
-                   REW,
-                   GAMMA,
-                   FILE)
+  # write_full_POMDP(list(TR_FUNCTION_ECO[[test_scenario]]),
+  #                  TR_FUNCTION_TECH,
+  #                  B_FULL_ECO,
+  #                  B_FULL_TECH,
+  #                  B_PAR,
+  #                  B_PAR_TECH,
+  #                  REW,
+  #                  GAMMA,
+  #                  FILE)
 
   path_to_sarsop <- system.file("bin/x64", "pomdpsol.exe", package="sarsop")
 
