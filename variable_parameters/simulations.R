@@ -166,9 +166,14 @@ trajectory <- function(state_prior_eco,
     #next observation given belief, action and obs
     set.seed(as.integer((as.double(Sys.time()) *i*1000 + Sys.getpid())%%2^31))
 
+    if (state_tech[i]==2){
+      prob_dist <-  c(transition_ecosystem[[true_model]][state_eco[i], ,actions[i]])
+    } else {
+      prob_dist <-  c(transition_ecosystem[[true_model]][state_eco[i], ,1])
+    }
     state_eco <- c(state_eco,
                    sample(seq(Num_s_eco), size=1, replace = TRUE,
-                          prob = c(transition_ecosystem[[true_model]][state_eco[i], ,actions[i]])))
+                          prob =prob_dist))
 
     state_tech <- c(state_tech,
                     sample(seq(Num_s_tech), size=1, replace = TRUE,

@@ -102,7 +102,7 @@ for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
                "--output", OUTPUT_FILE,
                FILE,
                sep=" ")
-  system(cmd)
+  # system(cmd)
 
   alphas <- read_policyx2(OUTPUT_FILE)
 

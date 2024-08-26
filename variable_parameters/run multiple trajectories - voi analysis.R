@@ -79,7 +79,7 @@ head(voi_data_best_policy_full)
 index_MDP <- 25
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
-  filter(index_MDP_test %in% c(7,index_MDP))
+  filter(index_MDP_test %in% c(14,index_MDP))
 
 states <- voi_data_full_analysis %>%
   ggplot()+
