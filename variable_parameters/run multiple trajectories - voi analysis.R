@@ -1,4 +1,4 @@
-voi_data_full <- read.csv(res_file, header = FALSE)
+voi_data_full <- read.csv("variable_parameters/res/voi_POMDP_pars_climate.csv", header = FALSE)
 names(voi_data_full) <- c("time",
                           "tech_model",
                           "mean_ecosystem",
@@ -14,18 +14,25 @@ names(voi_data_full) <- c("time",
                           "index_MDP_true",
                           "index_MDP_test")
 
-voi_data_analysis_full <- voi_data_full %>%
+voi_data_full <- voi_data_full %>%
   mutate(true_delta_crit = all_scenarios$delta_t_crit_K[index_MDP_true],
          test_delta_crit = all_scenarios$delta_t_crit_K[index_MDP_test],
          true_IPCC = all_scenarios$scenario[index_MDP_true],
-         test_IPCC = all_scenarios$scenario[index_MDP_test],
-  )%>%
+         test_IPCC = all_scenarios$scenario[index_MDP_test]
+         ,tech_model = ifelse(tech_model==1, "Successful", "Failed")
+  )
+
+voi_data_analysis_full <-  voi_data_full %>%
   filter(time == 84)%>%
   # filter(tech_model == 2)%>%
+  # group_by(index_MDP_true)%>%
   group_by(index_MDP_true)%>%
   mutate(max_value = max(mean_value),
             test_value = mean_value) %>%
+  group_by(index_MDP_true,index_MDP_test,time,tech_model)%>%
   mutate(r_EVPI=((max_value-test_value)/max_value))
+  # group_by(index_MDP_true,index_MDP_test,time)%>%
+  # summarise(r_EVPI=mean((max_value-test_value)/max_value))
 
 voi_plot_full <- voi_data_analysis_full %>%
   ggplot(aes(x=index_MDP_true , y = index_MDP_test))+
@@ -59,8 +66,9 @@ for (k in seq(length(unique(all_scenarios$scenario)))){
   if (scenario_text!="all"){
     position_text <- length(tested_delta_t_crit_K)*(k-1/2)+0.5
     voi_plot_full <- voi_plot_full+
-      annotate("text", x=position_text, y=-1,label=scenario_text)+
-      annotate("text", y=position_text, x=-1,label=scenario_text, angle=90)
+      annotate("text", x=position_text, y=-1,label=scenario_text, size=2.8)+
+      annotate("text", y=position_text, x=-1,label=scenario_text, angle=90
+               , size=2.8)
   }
 }
 voi_plot_full
@@ -70,16 +78,22 @@ voi_data_best_policy_full <- voi_data_analysis_full %>%
   ungroup()%>%
   group_by(index_MDP_test)%>%
   # group_by(test_IPCC)%>%
+  # group_by(test_IPCC,test_delta_crit)%>%
   # group_by(test_delta_crit)%>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
-tail(voi_data_best_policy_full)
-head(voi_data_best_policy_full)
+best_index <- voi_data_best_policy_full$index_MDP_test[2]
+worst_index <- voi_data_best_policy_full$index_MDP_test[31]
 
-index_MDP <- 25
+index_MDP <- 3
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
-  filter(index_MDP_test %in% c(14,index_MDP))
+  filter(index_MDP_test %in% c(best_index,
+                               index_MDP,
+                               worst_index,
+                               31))
+# %>%
+#   mutate(index_MDP_test=paste(test_IPCC, "-",test_delta_crit))
 
 states <- voi_data_full_analysis %>%
   ggplot()+
@@ -87,13 +101,13 @@ states <- voi_data_full_analysis %>%
     x="time (yrs)",
     y="ecosystem state"
   )+
-  geom_ribbon(aes(x = time * time_step,
-                  ymax=mean_ecosystem+sd_ecosystem,
-                  ymin=mean_ecosystem-sd_ecosystem,
-                  group = index_MDP_test,
-                  fill = factor(index_MDP_test)),
-              # fill = "blue",
-              alpha = 0.2)+
+  # geom_ribbon(aes(x = time * time_step,
+  #                 ymax=mean_ecosystem+sd_ecosystem,
+  #                 ymin=mean_ecosystem-sd_ecosystem,
+  #                 group = index_MDP_test,
+  #                 fill = factor(index_MDP_test)),
+  #             # fill = "blue",
+  #             alpha = 0.2)+
   geom_line(aes(x=(time)*time_step,
                 y=(mean_ecosystem),
                 group = index_MDP_test,
@@ -173,8 +187,4 @@ actions_deploy <- voi_data_full_analysis %>%
   theme_minimal()
 actions_deploy
 
-ggarrange(states,
-          actions,
-          values,
-          ncol=1)
 

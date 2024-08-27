@@ -1,4 +1,4 @@
-source("variable parameters/write_POMDPx.R")
+source("variable_parameters/write_POMDPx.R")
 ##technology####
 p_dev <- 0.1**time_step
 tech_states <- seq(2)
