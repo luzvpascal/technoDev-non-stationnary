@@ -22,7 +22,7 @@ B_PAR <- rep(1, length(transition_matrix_list))/length(transition_matrix_list)
 B_PAR_TECH <- rep(1, length(transition_tech))/length(transition_tech)
 
 
-file_name <- paste0("POMDPtest")
+file_name <- paste0("variable_parameters/pomdpx/fullPOMDP")
 
 FILE <- paste0(file_name, ".pomdpx")
 
@@ -42,7 +42,7 @@ OUTPUT_FILE <- paste0(file_name, ".policyx")
 
 cmd <- paste(path_to_sarsop,
              "--precision", 0.0000001,
-             "--timeout",3600,
+             "--timeout",600,
              "--output", OUTPUT_FILE,
              FILE,
              sep=" ")
