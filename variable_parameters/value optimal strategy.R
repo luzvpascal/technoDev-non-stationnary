@@ -6,7 +6,7 @@ library(tidyr)
 library(ggpubr)
 source("deployment POMDP/read_solutions.R")
 source("variable_parameters/simulations.R")
-alphas <- read_policyx2("POMDPtest.policyx")
+alphas <- read_policyx2("variable_parameters/pomdpx/CombinedPolicy.policyx")
 
 # Define the function to run a single simulation
 run_simulation_failure <- function(i) {
@@ -50,7 +50,7 @@ run_simulation_success <- function(i) {
 
 # Set the number of cores
 ncores <-detectCores()-2
-res_file <- "voi_POMDP_pars_climate.csv"
+res_file <- "voi_POMDP_pars_climate3.csv"
 test_scenario <- length(TR_FUNCTION_ECO)+1
 
 for (true_scenario  in seq(length(TR_FUNCTION_ECO))){

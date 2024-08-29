@@ -22,25 +22,21 @@ voi_data_full <- voi_data_full %>%
          ,tech_model = ifelse(tech_model==1, "Successful", "Failed")
   )
 
-voi_data_analysis_full <-  voi_data_full %>%
+rEVPI_data <-  voi_data_full %>%
   filter(time == 84)%>%
-  # filter(tech_model == 2)%>%
-  # group_by(index_MDP_true)%>%
+  group_by(index_MDP_true, index_MDP_test)%>%
+  summarise(mean_value=mean(mean_value))%>%
+  ungroup()%>%
   group_by(index_MDP_true)%>%
   mutate(max_value = max(mean_value),
             test_value = mean_value) %>%
-  group_by(index_MDP_true,index_MDP_test,time,tech_model)%>%
+  group_by(index_MDP_true,index_MDP_test)%>%
   mutate(r_EVPI=((max_value-test_value)/max_value))
-  # group_by(index_MDP_true,index_MDP_test,time)%>%
-  # summarise(r_EVPI=mean((max_value-test_value)/max_value))
 
-voi_plot_full <- voi_data_analysis_full %>%
+voi_plot_full <- rEVPI_data %>%
   ggplot(aes(x=index_MDP_true , y = index_MDP_test))+
-  # ggplot(aes(x=true_IPCC , y = test_IPCC))+
-  # ggplot(aes(x=true_delta_crit , y = test_delta_crit))+
   geom_tile(aes(fill=r_EVPI*100))+
   scale_fill_gradient(low = "lightyellow", high = "red") +
-  facet_wrap(~tech_model)+
   theme_minimal() +
   coord_equal()+
   labs(title = "",
@@ -73,19 +69,15 @@ for (k in seq(length(unique(all_scenarios$scenario)))){
 }
 voi_plot_full
 
-
-voi_data_best_policy_full <- voi_data_analysis_full %>%
+best_policy <- rEVPI_data %>%
   ungroup()%>%
   group_by(index_MDP_test)%>%
-  # group_by(test_IPCC)%>%
-  # group_by(test_IPCC,test_delta_crit)%>%
-  # group_by(test_delta_crit)%>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
-best_index <- voi_data_best_policy_full$index_MDP_test[2]
-worst_index <- voi_data_best_policy_full$index_MDP_test[31]
+best_index <- best_policy$index_MDP_test[1]
+worst_index <- best_policy$index_MDP_test[31]
 
-index_MDP <- 3
+index_MDP <- 25
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
@@ -143,12 +135,12 @@ values <- voi_data_full_analysis %>%
     x="time (yrs)",
     y="value"
   )+
-  geom_ribbon(aes(x = time * time_step,
-                  ymax=mean_value+sd_value,
-                  ymin=mean_value-sd_value,
-                  group = index_MDP_test,
-                  fill = factor(index_MDP_test)),
-              alpha = 0.2)+
+  # geom_ribbon(aes(x = time * time_step,
+  #                 ymax=mean_value+sd_value,
+  #                 ymin=mean_value-sd_value,
+  #                 group = index_MDP_test,
+  #                 fill = factor(index_MDP_test)),
+  #             alpha = 0.2)+
   geom_line(aes(x=(time)*time_step,
                 y=(mean_value),
                 group = index_MDP_test,
@@ -186,5 +178,3 @@ actions_deploy <- voi_data_full_analysis %>%
   facet_wrap(~tech_model)+
   theme_minimal()
 actions_deploy
-
-
