@@ -108,6 +108,9 @@ transition_function_ecosystem <- function(ecosystem_states,
                   mean = log(sik_bar[i, index_temp,index_action]),
                   sd=sigma_eco)
 
+          transition_ecosystem_index_action[i,j, index_temp] <-
+            round(transition_ecosystem_index_action[i,j, index_temp], digits=4)
+
         }
         #normalise
         transition_ecosystem_index_action[i, , index_temp] <-
@@ -138,9 +141,8 @@ transition_function_temperatures <- function(temperature_states,
                                           pnorm(temperature_states[j]-1/(2*N_temperatures),
                                                 mean=delta_t_avg,
                                                 sd=sigma_temp)
-#
-#         transition_temperatures[t, j] <- round(transition_temperatures[t, j],
-#                                                                    digits=3)
+
+        transition_temperatures[t, j] <- round(transition_temperatures[t, j], digits=4)
 
       }
       transition_temperatures[t,] <- transition_temperatures[t,]/sum(transition_temperatures[t,])

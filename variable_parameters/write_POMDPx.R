@@ -1,8 +1,13 @@
 write_full_POMDP <- function(TR_FUNCTION_ECO,
+                             TR_FUNCTION_TEMP,
+                             TR_FUNCTION_TIME,
                              TR_FUNCTION_TECH,
                              B_FULL_ECO,
+                             B_FULL_TEMP,
+                             B_FULL_TIME,
                              B_FULL_TECH,
-                             B_PAR,
+                             B_PAR_ECO,
+                             B_PAR_TEMP,
                              B_PAR_TECH,
                              REW,
                              GAMMA,
@@ -41,18 +46,24 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
   # GAMMA: number between 0 and 1, the discount factor
   # FILE: string, path to the pomdpx file
 
-  Num_eco <- dim(TR_FUNCTION_ECO[[1]])[1] #number of ecosystem states
+  Num_eco <- dim(TR_FUNCTION_ECO[[1]][[1]])[1] #number of ecosystem states
+  Num_temp <- dim(TR_FUNCTION_TEMP[[1]])[2]#number of temperature states
+  Num_time <- dim(TR_FUNCTION_TEMP[[1]])[1]#number of time states
   Num_tech <- dim(TR_FUNCTION_TECH[[1]][[1]])[1]#number of tech states
 
-  Num_mod <- length(TR_FUNCTION_ECO) #number of models for temperature dynamics
+  Num_mod_eco <- length(TR_FUNCTION_ECO) #number of models for temperature dynamics
+  Num_mod_temp <- length(TR_FUNCTION_TEMP) #number of models for temperature dynamics
   Num_mod_tech <- length(TR_FUNCTION_TECH) #number of models for tech dynamics
 
-  Num_a <-dim(TR_FUNCTION_ECO[[1]])[3] #number of actions
+  Num_a <-length(TR_FUNCTION_ECO[[1]]) #number of actions
 
   STATES_ECO <- paste0("obs_state_eco", 1:Num_eco)
+  STATES_TEMP <- paste0("obs_state_temp", 1:Num_temp)
+  STATES_TIME <- paste0("obs_state_time", 1:Num_time)
   STATES_TECH <- paste0("obs_state_tech", 1:Num_tech)
 
-  MODELS <- paste0("model", 1:Num_mod)
+  MODELS_ECO <- paste0("model_eco", 1:Num_mod_eco)
+  MODELS_TEMP <- paste0("model_temp", 1:Num_mod_temp)
   MODELS_TECH <- paste0("model_tech", 1:Num_mod_tech)
 
   ACTIONS <- paste0("action", 1:Num_a)
@@ -70,19 +81,30 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
                              "\n", paste0("<ValueEnum>", paste0(STATES_ECO, collapse = " "),
                                           "</ValueEnum>"), "\n", "</StateVar>", "\n\n")
 
+  header_state_temp <- paste0("<StateVar vnamePrev=\"temp_0\" vnameCurr=\"temp_1\" fullyObs=\"true\">",
+                              "\n", paste0("<ValueEnum>", paste0(STATES_TEMP, collapse = " "),
+                                           "</ValueEnum>"), "\n", "</StateVar>", "\n\n")
+
+  header_state_time <- paste0("<StateVar vnamePrev=\"time_0\" vnameCurr=\"time_1\" fullyObs=\"true\">",
+                              "\n", paste0("<ValueEnum>", paste0(STATES_TIME, collapse = " "),
+                                           "</ValueEnum>"), "\n", "</StateVar>", "\n\n")
+
   header_state_tech <- paste0("<StateVar vnamePrev=\"tech_0\" vnameCurr=\"tech_1\" fullyObs=\"true\">",
                               "\n", paste0("<ValueEnum>", paste0(STATES_TECH, collapse = " "),
                                            "</ValueEnum>"), "\n", "</StateVar>", "\n\n")
 
   # header model
-  header_model <- paste0("<StateVar vnamePrev=\"hidden_0\" vnameCurr=\"hidden_1\" fullyObs=\"false\">",
-                       "\r\n", paste0("<ValueEnum>", paste0(MODELS, collapse =" "),"</ValueEnum>",
+  header_model_eco <- paste0("<StateVar vnamePrev=\"hidden_eco_0\" vnameCurr=\"hidden_eco_1\" fullyObs=\"false\">",
+                       "\r\n", paste0("<ValueEnum>", paste0(MODELS_ECO, collapse =" "),"</ValueEnum>",
+                                      "\r\n</StateVar>\r\n\n"))
+
+  header_model_temp <- paste0("<StateVar vnamePrev=\"hidden_temp_0\" vnameCurr=\"hidden_temp_1\" fullyObs=\"false\">",
+                       "\r\n", paste0("<ValueEnum>", paste0(MODELS_TEMP, collapse =" "),"</ValueEnum>",
                                       "\r\n</StateVar>\r\n\n"))
 
   header_model_tech <- paste0("<StateVar vnamePrev=\"hidden_tech_0\" vnameCurr=\"hidden_tech_1\" fullyObs=\"false\">",
                               "\r\n", paste0("<ValueEnum>", paste0(MODELS_TECH, collapse =" "),"</ValueEnum>",
                                              "\r\n</StateVar>\r\n\n"))
-
   #header actions
   header_action <- paste0("<ActionVar vname=\"action_control\">\r\n",
                           "<ValueEnum>", paste0(ACTIONS, collapse = " "),
@@ -105,6 +127,30 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
                           "</Parameter>\r\n",
                           "</CondProb>\r\n\n",
 
+                          #states temperatures
+                          "<CondProb>\r\n",
+                          "<Var>temp_0</Var>\r\n",
+                          "<Parent>null</Parent>\r\n",
+                          "<Parameter type=\"TBL\">\r\n",
+                          "<Entry>\r\n",
+                          "<Instance> - </Instance>\r\n",
+                          "<ProbTable>", paste0(B_FULL_TEMP, collapse = " "), "</ProbTable>\n",
+                          "</Entry>\r\n",
+                          "</Parameter>\r\n",
+                          "</CondProb>\r\n\n",
+
+                          #states time
+                          "<CondProb>\r\n",
+                          "<Var>time_0</Var>\r\n",
+                          "<Parent>null</Parent>\r\n",
+                          "<Parameter type=\"TBL\">\r\n",
+                          "<Entry>\r\n",
+                          "<Instance> - </Instance>\r\n",
+                          "<ProbTable>", paste0(B_FULL_TIME, collapse = " "), "</ProbTable>\n",
+                          "</Entry>\r\n",
+                          "</Parameter>\r\n",
+                          "</CondProb>\r\n\n",
+
                           #states tech
                           "<CondProb>\r\n",
                           "<Var>tech_0</Var>\r\n",
@@ -117,14 +163,26 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
                           "</Parameter>\r\n",
                           "</CondProb>\r\n\n",
 
-                          #hidden model
+                          #hidden model eco
                           "<CondProb>\r\n",
-                          "<Var>hidden_0 </Var>\r\n",
+                          "<Var>hidden_eco_0 </Var>\r\n",
                           "<Parent>null</Parent>\r\n",
                           "<Parameter type=\"TBL\">\r\n",
                           "<Entry>\r\n",
                           "<Instance> - </Instance>\r\n",
-                          "<ProbTable>", paste0(B_PAR, collapse = " "), "</ProbTable>\r\n",
+                          "<ProbTable>", paste0(B_PAR_ECO, collapse = " "), "</ProbTable>\r\n",
+                          "</Entry>\r\n",
+                          "</Parameter>\r\n",
+                          "</CondProb>\r\n\n",
+
+                          #hidden model temp
+                          "<CondProb>\r\n",
+                          "<Var>hidden_temp_0 </Var>\r\n",
+                          "<Parent>null</Parent>\r\n",
+                          "<Parameter type=\"TBL\">\r\n",
+                          "<Entry>\r\n",
+                          "<Instance> - </Instance>\r\n",
+                          "<ProbTable>", paste0(B_PAR_TEMP, collapse = " "), "</ProbTable>\r\n",
                           "</Entry>\r\n",
                           "</Parameter>\r\n",
                           "</CondProb>\r\n\n",
@@ -146,8 +204,11 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
 
   header <- paste0(header,
                    header_state_eco,
+                   header_state_temp,
+                   header_state_time,
                    header_state_tech,
-                   header_model,
+                   header_model_eco,
+                   header_model_temp,
                    header_model_tech,
                    header_action,
                    header_obs_rew,
@@ -159,37 +220,43 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
     "<StateTransitionFunction>\r\n\n",
     "<CondProb>\r\n",
     "<Var>eco_1</Var>\r\n",
-    "<Parent>action_control hidden_0 tech_0 eco_0</Parent>\r\n",
+    "<Parent>action_control hidden_eco_0 tech_0 temp_0 eco_0</Parent>\r\n",
     "<Parameter type=\"TBL\">\r\n")
 
   tr_filling_eco <- ""
-  for (mod_id in seq(Num_mod)){
-    mod_text <- MODELS[mod_id]
+  for (mod_id_eco in seq(Num_mod_eco)){
+    mod_text <- MODELS_ECO[mod_id_eco]
     tr_filling_eco_mod <- ""
     for (act_id in seq(Num_a)){
       action_text <- ACTIONS[act_id]
       for (tech_id in seq(Num_tech)){
         tech_id_text <- STATES_TECH[tech_id]
-        if (tech_id ==1){#if tech is idle, same effect as BAU (action 1)
-          action_prob_values <- TR_FUNCTION_ECO[[mod_id]][,,1]
-        } else {#if tech is ready effect of action
-          action_prob_values <- TR_FUNCTION_ECO[[mod_id]][,,act_id]
-        }
-        tr_filling_eco_mod <- paste(tr_filling_eco_mod,
-                                       "<Entry>\r\n",
-                                       "<Instance> ",
-                                       action_text, " " ,
-                                       mod_text, " ",
-                                       tech_id_text, " - -",
-                                       " </Instance>\r\n",
-                                       "<ProbTable>",
-                                       paste(c(t(action_prob_values)), sep=" ", collapse = " "),
-                                       "</ProbTable>\r\n",
-                                       "</Entry>\r\n", sep=" ")
+        for (temp_id in seq(Num_temp)){
+          temp_id_text <- STATES_TEMP[temp_id]
+
+          if (tech_id ==1){#if tech is idle, same effect as BAU (action 1)
+            action_prob_values <- TR_FUNCTION_ECO[[mod_id_eco]][[1]][,,temp_id]
+          } else {#if tech is ready effect of action
+            action_prob_values <- TR_FUNCTION_ECO[[mod_id_eco]][[act_id]][,,temp_id]
+          }
+          tr_filling_eco_mod <- paste(tr_filling_eco_mod,
+                                      "<Entry>\r\n",
+                                      "<Instance> ",
+                                      action_text, " " ,
+                                      mod_text, " ",
+                                      tech_id_text, " " ,
+                                      temp_id_text,
+                                      " - -",
+                                      " </Instance>\r\n",
+                                      "<ProbTable>",
+                                      paste(c(t(action_prob_values)), sep=" ", collapse = " "),
+                                      "</ProbTable>\r\n",
+                                      "</Entry>\r\n", sep=" ")
       }
     }
     tr_filling_eco <- paste(tr_filling_eco, "\r\n",
                             tr_filling_eco_mod)
+  }
   }
 
   tr_end_eco <- paste(
@@ -198,41 +265,82 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
 
   tr_eco <- paste(tr_header_eco, tr_filling_eco, tr_end_eco)
 
+  ## build transition for the temperature ####
+  tr_header_temp <- paste(
+    "<CondProb>\r\n",
+    "<Var>temp_1</Var>\r\n",
+    "<Parent>hidden_temp_0 time_0</Parent>\r\n",
+    "<Parameter type=\"TBL\">\r\n")
+
+  tr_filling_temp <- ""
+  for (mod_id_temp in seq(Num_mod_temp)){
+    model_text <- MODELS_TEMP[mod_id_temp]
+    model_prob_values <- TR_FUNCTION_TEMP[[mod_id_temp]]
+    tr_filling_temp <- paste(tr_filling_temp,
+                            "<Entry>\r\n",
+                            "<Instance>",
+                            model_text,
+                            " - -",
+                            " </Instance>\r\n",
+                            "<ProbTable>",
+                            # paste(round(c(t(model_prob_values)), digits = 4), sep=" ", collapse = " "),
+                            paste(c(t(model_prob_values)), sep=" ", collapse = " "),
+                            "</ProbTable>\r\n",
+                            "</Entry>\r\n")
+  }
+  tr_end_temp <- paste(
+    "</Parameter>\r\n",
+    "</CondProb>\r\n\n")
+  tr_temp <- paste(tr_header_temp, tr_filling_temp, tr_end_temp)
+
+  # build transition for the time ####
+  tr_time <- paste("<CondProb>\r\n",
+                   "<Var>time_1</Var>\r\n",
+                   "<Parent>time_0</Parent>\r\n",
+                   "<Parameter type=\"TBL\">\r\n",
+                   "<Entry>\r\n<Instance> - - </Instance>\r\n",
+                   "<ProbTable>",
+                   paste0(t(TR_FUNCTION_TIME), collapse = " "),
+                   "</ProbTable>\r\n",
+                   "</Entry>\r\n",
+                   "</Parameter>\r\n",
+                   "</CondProb>\r\n\n")
+
   ## build transition for the technology ####
-  tr_tech_header <- paste(
+  tr_header_tech <- paste(
     "<CondProb>\r\n",
     "<Var>tech_1</Var>\r\n",
     "<Parent>action_control hidden_tech_0 tech_0</Parent>\r\n",
     "<Parameter type=\"TBL\">\r\n")
 
-  mod_tr_tech_filling <- ""
+  tr_filling_tech <- ""
   for (mod_tech_id in seq(Num_mod_tech)){
     model_text <- MODELS_TECH[mod_tech_id]
     for (act_id in seq(Num_a)){
       action_text <- ACTIONS[act_id]
       prob_values_tech <- TR_FUNCTION_TECH[[mod_tech_id]][[act_id]]
 
-      mod_tr_tech_filling <- paste(mod_tr_tech_filling,
-                                   "<Entry>\r\n",
-                                   "<Instance>",
-                                   action_text, " ", model_text,
-                                   " - -",
-                                   " </Instance>\r\n",
-                                   "<ProbTable>",
-                                   paste(c(t(prob_values_tech)), sep=" ", collapse = " "),
-                                   "</ProbTable>\r\n",
-                                   "</Entry>\r\n")
+      tr_filling_tech <- paste(tr_filling_tech,
+                               "<Entry>\r\n",
+                               "<Instance>",
+                               action_text, " ", model_text,
+                               " - -",
+                               " </Instance>\r\n",
+                               "<ProbTable>",
+                               paste(c(t(prob_values_tech)), sep=" ", collapse = " "),
+                               "</ProbTable>\r\n",
+                               "</Entry>\r\n")
     }
   }
-  mod_tr_tech_end <- paste(
+  tr_end_tech <- paste(
     "</Parameter>\r\n",
     "</CondProb>\r\n\n")
-  tr_tech <- paste(tr_tech_header, mod_tr_tech_filling, mod_tr_tech_end)
+  tr_tech <- paste(tr_header_tech, tr_filling_tech, tr_end_tech)
 
   ## transition between models ####
-  tr_model <- paste("<CondProb>\r\n",
-                    "<Var>hidden_1</Var>\r\n",
-                    "<Parent>hidden_0</Parent>\r\n",
+  tr_model_eco <- paste("<CondProb>\r\n",
+                    "<Var>hidden_eco_1</Var>\r\n",
+                    "<Parent>hidden_eco_0</Parent>\r\n",
                     "<Parameter type=\"TBL\">\r\n",
                     "<Entry>\r\n<Instance> - - </Instance>\r\n",
                     "<ProbTable>",
@@ -241,6 +349,18 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
                     "</Entry>\r\n",
                     "</Parameter>\r\n",
                     "</CondProb>\r\n\n")
+
+  tr_model_temp <- paste("<CondProb>\r\n",
+                        "<Var>hidden_temp_1</Var>\r\n",
+                        "<Parent>hidden_temp_0</Parent>\r\n",
+                        "<Parameter type=\"TBL\">\r\n",
+                        "<Entry>\r\n<Instance> - - </Instance>\r\n",
+                        "<ProbTable>",
+                        "identity",
+                        "</ProbTable>\r\n",
+                        "</Entry>\r\n",
+                        "</Parameter>\r\n",
+                        "</CondProb>\r\n\n")
 
   tr_model_tech <- paste("<CondProb>\r\n",
                          "<Var>hidden_tech_1</Var>\r\n",
@@ -257,8 +377,11 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
 
 
   state_tr <- paste(tr_eco,
+                    tr_temp,
+                    tr_time,
                     tr_tech,
-                    tr_model,
+                    tr_model_eco,
+                    tr_model_temp,
                     tr_model_tech)
 
   # build div for observations ####
@@ -266,10 +389,10 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
   obs_fill <-paste(
     "<CondProb>\r\n",
     "<Var>obs</Var>\r\n",
-    "<Parent>hidden_1</Parent>\r\n",
+    "<Parent>hidden_eco_1</Parent>\r\n",
     "<Parameter type=\"TBL\">\r\n")
-  for (mod_id in c(1:Num_mod)){
-    model_text <- MODELS[mod_id]
+  for (mod_id in c(1:Num_mod_eco)){
+    model_text <- MODELS_ECO[mod_id]
     obs_fill_mod <- paste0(
       "<Entry>\r\n",
       "<Instance> ",
@@ -291,14 +414,14 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
     "<RewardFunction>\r\n",
     "<Func>\r\n",
     "<Var>reward_agent</Var>\r\n",
-    "<Parent> action_control eco_0  </Parent>\r\n",
+    "<Parent> time_0 action_control eco_0  </Parent>\r\n",
     "<Parameter type=\"TBL\">\r\n"
   )
 
   rew_fill <- paste0(
     "<Entry>\r\n",
-    "<Instance> - - </Instance>\r\n",
-    "<ValueTable>", paste0(REW, collapse = " "), "</ValueTable>\r\n",
+    "<Instance> - - - </Instance>\r\n",
+    "<ValueTable>", paste0(unlist(REW), collapse = " "), "</ValueTable>\r\n",
     "</Entry>\r\n"
   )
 
@@ -314,5 +437,4 @@ write_full_POMDP <- function(TR_FUNCTION_ECO,
   # paste everything ####
   a = paste(header, state_tr, obs, rew, end, sep = '')
   writeLines(a,FILE)
-
 }
