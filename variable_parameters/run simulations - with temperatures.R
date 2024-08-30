@@ -3,27 +3,27 @@ library(dplyr)
 library(tidyr)
 library(ggpubr)
 source("deployment POMDP/read_solutions.R")
-source("variable_parameters/simulations.R")
+source("variable_parameters/simulations - with temperatures.R")
 alphas <- read_policyx2(OUTPUT_FILE)
 
-data <- trajectory(state_prior_eco = tuple_to_index(1,
-                                                    N_ecosystem+1,
-                                                    N_ecosystem+1),
+data <- trajectory(state_prior_eco=N_ecosystem,
+                   state_prior_temp=1,
+                   state_prior_time = 1,
                    state_prior_tech = 1,
-                   Tmax=85,
-                   # initial_belief_state = B_PAR,
-                   # initial_belief_state = c(0.99,0.01),
-                   # initial_belief_state = c(0.01,0.99),
-                   initial_belief_state = c(0,1),
-                   # initial_belief_state = c(1,0),
+                   Tmax = 84,
+                   initial_belief_state_eco = B_PAR_ECO ,
+                   initial_belief_state_temp = B_PAR_TEMP,
                    initial_belief_state_tech = B_PAR_TECH,
-                   transition_ecosystem=TR_FUNCTION_ECO,
+                   transition_ecosystem = TR_FUNCTION_ECO,
+                   transition_temperatures = TR_FUNCTION_TEMP,
+                   transition_time = TR_FUNCTION_TIME,
                    transition_tech = TR_FUNCTION_TECH,
-                   reward=REW,
-                   true_model=2,
-                   true_model_tech = 2,
-                   alpha_momdp = alphas,
-                   disc = GAMMA,
+                   reward_time_list = REW,
+                   true_model_eco = 1,
+                   true_model_temp = 1,
+                   true_model_tech = 1,
+                   alpha_momdp,
+                   disc = 0.95,
                    optimal_policy = TRUE,
                    naive_policy = NA,
                    alpha_indexes=FALSE)
@@ -146,6 +146,6 @@ ggarrange(plot_eco_states,
 
 data$data_output[-nrow(data$data_output),] %>%
   mutate(action_name=ifelse(action==1, "BAU",
-                    ifelse(state_tech == 1, "Develop", "Deploy"))) %>%
+                            ifelse(state_tech == 1, "Develop", "Deploy"))) %>%
   group_by(action_name)%>%
   summarise(n())

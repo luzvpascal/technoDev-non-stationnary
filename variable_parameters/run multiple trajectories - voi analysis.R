@@ -77,7 +77,32 @@ best_policy <- rEVPI_data %>%
 best_index <- best_policy$index_MDP_test[1]
 worst_index <- best_policy$index_MDP_test[31]
 
-index_MDP <- 25
+#######################################
+# boxplot rEVPI best, worst, POMDP#####
+#######################################
+box_plots <- rEVPI_data %>%
+  filter(index_MDP_test %in% c(best_index,
+                               worst_index,
+                               31))%>%
+  ggplot(aes(x=factor(index_MDP_test),y=r_EVPI))+
+  geom_boxplot()+
+  theme_minimal()
+box_plots
+rEVPI_data %>%
+  filter(index_MDP_test %in% c(best_index,
+
+                               31))%>%
+  ggplot(aes(x=index_MDP_true, y=r_EVPI,
+             group=factor(index_MDP_test),
+             col=factor(index_MDP_test))
+         )+
+  geom_line()
+
+
+######################
+# interpret solutions#
+######################
+index_MDP <- 16
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
@@ -150,31 +175,35 @@ values <- voi_data_full_analysis %>%
 values
 
 actions_dev <- voi_data_full_analysis %>%
-  ggplot()+
-  geom_line(aes(x=(time)*time_step,
-                y=mean_action_dev,
-                group = index_MDP_test,
-                colour = factor(index_MDP_test)))+
+  ggplot() +
+  geom_tile(aes(x = (time) * time_step,
+                y = factor(index_MDP_test),  # Make y-axis a factor
+                fill = mean_action_dev),
+            col="black") +   # Use fill for color
+  scale_fill_gradient(low = "white", high = "navy") +  # Use gradient for continuous data
   labs(
-    x="time (yrs)",
-    col="action",
-    y=""
-  )+
-  facet_wrap(~tech_model)+
+    x = "time (yrs)",
+    fill = "Frequence selection",  # Update the fill legend label
+    y = ""
+  ) +
+  facet_wrap(~tech_model) +
   theme_minimal()
-actions_dev
 
 actions_deploy <- voi_data_full_analysis %>%
-  ggplot()+
-  geom_line(aes(x=(time)*time_step,
-                y=mean_action_deploy,
-                group = index_MDP_test,
-                colour = factor(index_MDP_test)))+
+  ggplot() +
+  geom_tile(aes(x = (time) * time_step,
+                y = factor(index_MDP_test),  # Make y-axis a factor
+                fill = mean_action_deploy),
+            col="black") +   # Use fill for color
+  scale_fill_gradient(low = "white", high = "darkred") +  # Use gradient for continuous data
   labs(
-    x="time (yrs)",
-    col="Deploy",
-    y=""
-  )+
-  facet_wrap(~tech_model)+
+    x = "time (yrs)",
+    fill = "Frequence selection",  # Update the fill legend label
+    y = ""
+  ) +
+  facet_wrap(~tech_model) +
   theme_minimal()
-actions_deploy
+
+ggpubr::ggarrange(actions_dev,
+          actions_deploy,
+          ncol=1)
