@@ -14,7 +14,7 @@ source("variable_parameters/value of information-dep.R")
 # Define the function to run a single simulation
 run_simulation_failure <- function(i) {
   trajectory(
-    state_prior_eco = tuple_to_index(1, N_ecosystem/2 + 1, N_ecosystem + 1),
+    state_prior_eco = tuple_to_index(1, N_ecosystem + 1, N_ecosystem + 1),
     state_prior_tech = 1,
     Tmax = 85,
     initial_belief_state = 1,
@@ -33,7 +33,7 @@ run_simulation_failure <- function(i) {
 }
 run_simulation_success <- function(i) {
   trajectory(
-    state_prior_eco = tuple_to_index(1, N_ecosystem/2 + 1, N_ecosystem + 1),
+    state_prior_eco = tuple_to_index(1, N_ecosystem+ 1, N_ecosystem + 1),
     state_prior_tech = 1,
     Tmax = 85,
     initial_belief_state = 1,

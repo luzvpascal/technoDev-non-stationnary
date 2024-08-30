@@ -74,7 +74,8 @@ best_policy <- rEVPI_data %>%
   group_by(index_MDP_test)%>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
-best_index <- best_policy$index_MDP_test[1]
+best_index <- best_policy$index_MDP_test[2]
+best_index <- 1
 worst_index <- best_policy$index_MDP_test[31]
 
 #######################################
@@ -90,27 +91,25 @@ box_plots <- rEVPI_data %>%
 box_plots
 rEVPI_data %>%
   filter(index_MDP_test %in% c(best_index,
-
                                31))%>%
   ggplot(aes(x=index_MDP_true, y=r_EVPI,
              group=factor(index_MDP_test),
              col=factor(index_MDP_test))
          )+
-  geom_line()
+  geom_point()
 
 
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 16
+index_MDP <- 23
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
                                index_MDP,
                                worst_index,
-                               31))
-# %>%
-#   mutate(index_MDP_test=paste(test_IPCC, "-",test_delta_crit))
+                               31))%>%
+  mutate(index_MDP_test=paste(index_MDP_test, "-", test_IPCC, "-",test_delta_crit))
 
 states <- voi_data_full_analysis %>%
   ggplot()+
@@ -130,7 +129,8 @@ states <- voi_data_full_analysis %>%
                 group = index_MDP_test,
                 colour = factor(index_MDP_test)))+
   facet_wrap(~tech_model)+
-  theme_minimal()
+  theme_minimal()+
+  lims(y=c(0,1))
 states
 
 states_tech <- voi_data_full_analysis %>%
@@ -183,7 +183,7 @@ actions_dev <- voi_data_full_analysis %>%
   scale_fill_gradient(low = "white", high = "navy") +  # Use gradient for continuous data
   labs(
     x = "time (yrs)",
-    fill = "Frequence selection",  # Update the fill legend label
+    fill = "Frequence selection\ndevelopment",  # Update the fill legend label
     y = ""
   ) +
   facet_wrap(~tech_model) +
@@ -198,7 +198,7 @@ actions_deploy <- voi_data_full_analysis %>%
   scale_fill_gradient(low = "white", high = "darkred") +  # Use gradient for continuous data
   labs(
     x = "time (yrs)",
-    fill = "Frequence selection",  # Update the fill legend label
+    fill = "Frequence selection\ndeployment",  # Update the fill legend label
     y = ""
   ) +
   facet_wrap(~tech_model) +
