@@ -1,5 +1,5 @@
 ## discrete POMDP formulation ####
-setwd("technoDev-non-stationnary/full dev and dep POMDP")
+setwd("~/technoDev-non-stationnary/full dev and dep POMDP")
 source("write_POMDPx.R")
 source("read_solutions.R")
 source("simulations.R")

@@ -3,9 +3,9 @@ library(tidyverse)
 library(dplyr)
 library(latex2exp)
 library(MDPtoolbox)
-source("variable parameters/functions variable parameters - MDP.R")
+source("variable_parameters/functions variable parameters - MDP.R")
 ## discrete ecosystem states ####
-N_ecosystem <- 20
+N_ecosystem <- 10
 ecosystem_states <- seq(0,1,1/N_ecosystem)
 
 ## discrete temperature variations####
@@ -29,7 +29,7 @@ sigmoid_bool_r <- FALSE
 ## capacity parameters ####
 K_min <- 0
 K_max <- 1
-delta_t_crit_K <- 2
+delta_t_crit_K <- 1.5
 sigmoid_bool_K <- TRUE
 
 ## actions parameters ####
@@ -167,7 +167,8 @@ temperature_data <- read.csv("data IPCC/summarized_data.csv")
 temperature_data$Year <- temperature_data$Year-min(temperature_data$Year)+1
 temperature_data_filter <- filter(temperature_data,
                                   # scenario == "Historical"|scenario=="SSP1_1_9")
-                                  scenario == "Historical"|scenario=="SSP5_8_5")
+                                  scenario=="SSP1_1_9")
+                                  # scenario == "Historical"|scenario=="SSP5_8_5")
                                   # scenario == "Historical"|scenario=="SSP1_1_9")
 
 transition_temperatures <- transition_function_temperatures(temperature_states,

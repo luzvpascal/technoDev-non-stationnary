@@ -4,52 +4,13 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(ggpubr)
-source("deployment POMDP/read_solutions.R")
-source("variable_parameters/simulations.R")
-source("variable_parameters/write_POMDPx.R")
-
-source("variable_parameters/value of information-dep.R")
-
-## useful functions####
-# Define the function to run a single simulation
-run_simulation_failure <- function(i) {
-  trajectory(
-    state_prior_eco = tuple_to_index(1, N_ecosystem + 1, N_ecosystem + 1),
-    state_prior_tech = 1,
-    Tmax = 85,
-    initial_belief_state = 1,
-    initial_belief_state_tech = B_PAR_TECH,
-    transition_ecosystem = TR_FUNCTION_ECO_TRUE,
-    transition_tech = TR_FUNCTION_TECH,
-    reward = REW,
-    true_model = 1,
-    true_model_tech = 2,
-    alpha_momdp = alphas,
-    disc = GAMMA,
-    optimal_policy = TRUE,
-    naive_policy = NA,
-    alpha_indexes = FALSE
-  )$data_output[-86,]
-}
-run_simulation_success <- function(i) {
-  trajectory(
-    state_prior_eco = tuple_to_index(1, N_ecosystem+ 1, N_ecosystem + 1),
-    state_prior_tech = 1,
-    Tmax = 85,
-    initial_belief_state = 1,
-    initial_belief_state_tech = B_PAR_TECH,
-    transition_ecosystem = TR_FUNCTION_ECO_TRUE,
-    transition_tech = TR_FUNCTION_TECH,
-    reward = REW,
-    true_model = 1,
-    true_model_tech = 1,
-    alpha_momdp = alphas,
-    disc = GAMMA,
-    optimal_policy = TRUE,
-    naive_policy = NA,
-    alpha_indexes = FALSE
-  )$data_output[-86,]
-}
+## load global variables ####
+source("global variables.R")
+source("helper functions/read_solutions.R")
+source("helper functions/simulations.R")
+source("helper functions/write_POMDPx.R")
+source("helper functions/functions variable parameters - MDP.R")
+source("variable_parameters/build transition and reward function.R")
 
 ##technology####
 p_dev <- 0.1**time_step
@@ -61,7 +22,6 @@ transition_failure <- list(diag(2),
 transition_tech <- list(transition_success, transition_failure)
 
 ## POMDP definition #####
-TR_FUNCTION_ECO <- transition_matrix_list
 TR_FUNCTION_TECH <- transition_tech
 REW <- Reward
 GAMMA <- gamma
@@ -73,24 +33,24 @@ B_FULL_TECH <- c(1, rep(0, length(tech_states)-1))
 B_PAR <- 1
 B_PAR_TECH <- rep(1, length(transition_tech))/length(transition_tech)
 
-file_name <- paste0("variable_parameters/pomdpx/POMDPtest")
+file_name <- paste0("pomdpx/POMDPscenario")
 # Set the number of cores
 ncores <-detectCores()-2
-res_file <- "variable_parameters/res/voi_POMDP_pars_climate.csv"
+res_file <- "res/voi_POMDP_pars_climate.csv"
 
-for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
+for (test_scenario  in seq(length(transition_matrix_list))){
   ## solve POMDP for assumed scenario ####
   FILE <- paste0(file_name, test_scenario, ".pomdpx")
 
-  # write_full_POMDP(list(TR_FUNCTION_ECO[[test_scenario]]),
-  #                  TR_FUNCTION_TECH,
-  #                  B_FULL_ECO,
-  #                  B_FULL_TECH,
-  #                  B_PAR,
-  #                  B_PAR_TECH,
-  #                  REW,
-  #                  GAMMA,
-  #                  FILE)
+  write_full_POMDP(list(transition_matrix_list[[test_scenario]]),
+                   TR_FUNCTION_TECH,
+                   B_FULL_ECO,
+                   B_FULL_TECH,
+                   B_PAR,
+                   B_PAR_TECH,
+                   REW,
+                   GAMMA,
+                   FILE)
 
   path_to_sarsop <- system.file("bin/x64", "pomdpsol.exe", package="sarsop")
 
@@ -102,23 +62,22 @@ for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
                "--output", OUTPUT_FILE,
                FILE,
                sep=" ")
-  # system(cmd)
+  system(cmd)
 
   alphas <- read_policyx2(OUTPUT_FILE)
 
-  for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
-    TRUE_MODEL <- true_scenario
-    print(paste(TRUE_MODEL, "-", test_scenario))
+  for (true_scenario  in seq(length(transition_matrix_list))){
+    TRUE_MODEL <- 1
+    print(paste(true_scenario, "-", test_scenario))
 
-    B_PAR_TEST <- 1
-    TR_FUNCTION_ECO_TRUE <- list(TR_FUNCTION_ECO[[true_scenario]])
+    TR_FUNCTION_ECO <- list(transition_matrix_list[[true_scenario]])
 
     # Create a cluster
     cl <- makeCluster(ncores)
 
     # Export necessary variables to the cluster
-    clusterExport(cl, c("N_ecosystem", "B_PAR_TEST", "B_PAR_TECH",
-                        "TR_FUNCTION_ECO_TRUE", "TR_FUNCTION_TECH",
+    clusterExport(cl, c("N_ecosystem", "B_PAR", "B_PAR_TECH",
+                        "TR_FUNCTION_ECO", "TR_FUNCTION_TECH",
                         "REW", "TRUE_MODEL","alphas", "GAMMA", "tuple_to_index",
                         "trajectory", "belief_tech","belief_mod","belief",
                         "update_belief_mod","update_belief_tech",
@@ -126,8 +85,8 @@ for (test_scenario  in seq(length(TR_FUNCTION_ECO))){
     ))
 
     # Run the simulations in parallel
-    results_failure <- parLapply(cl, 1:500, run_simulation_failure)
-    results_success <- parLapply(cl, 1:500, run_simulation_success)
+    results_failure <- parLapply(cl, 1:1000, run_simulation_failure)
+    results_success <- parLapply(cl, 1:1000, run_simulation_success)
 
     # Stop the cluster
     stopCluster(cl)
