@@ -62,7 +62,11 @@ for (index in selected_scenarios){
     K_eff_low <- c(K_eff_low, K_function(K_min, K_max, delta_t_crit,
                                          tested_delta_low[t],sigmoid_bool_K))
     K_eff_up <- c(K_eff_up, K_function(K_min, K_max, delta_t_crit,
+<<<<<<< HEAD
+                                 tested_delta_up[t],sigmoid_bool_K))
+=======
                                        tested_delta_up[t],sigmoid_bool_K))
+>>>>>>> a1dfb590ebdf3aa7228f2ef4e9d2f79647780bd7
   }
 
   K_eff_data <- rbind(K_eff_data,
