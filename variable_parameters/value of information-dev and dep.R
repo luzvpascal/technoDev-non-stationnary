@@ -11,6 +11,7 @@ source("helper functions/simulations.R")
 source("helper functions/write_POMDPx.R")
 source("helper functions/functions variable parameters - MDP.R")
 source("variable_parameters/build transition and reward function.R")
+source("helper functions/simulations success failure.R")
 
 ##technology####
 p_dev <- 0.1**time_step
@@ -38,7 +39,7 @@ file_name <- paste0("pomdpx/POMDPscenario")
 ncores <-detectCores()-2
 res_file <- "res/voi_POMDP_pars_climate.csv"
 
-for (test_scenario  in seq(length(transition_matrix_list))){
+for (test_scenario  in seq(length(transition_matrix_list)-1)){
   ## solve POMDP for assumed scenario ####
   FILE <- paste0(file_name, test_scenario, ".pomdpx")
 

@@ -1,4 +1,4 @@
-voi_data_full <- read.csv("variable_parameters/res/voi_POMDP_pars_climate.csv",
+voi_data_full <- read.csv("res/voi_POMDP_pars_climate.csv",
                           header = FALSE)
 names(voi_data_full) <- c("time",
                           "tech_model",
