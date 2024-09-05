@@ -39,7 +39,7 @@ file_name <- paste0("pomdpx/POMDPscenario")
 ncores <-detectCores()-2
 res_file <- "res/voi_POMDP_pars_climate.csv"
 
-for (test_scenario  in seq(length(transition_matrix_list)-1)){
+for (test_scenario  in seq(length(transition_matrix_list))){
   ## solve POMDP for assumed scenario ####
   FILE <- paste0(file_name, test_scenario, ".pomdpx")
 
