@@ -30,7 +30,7 @@ rEVPI_data <-  voi_data_full %>%
   ungroup()%>%
   group_by(index_MDP_true)%>%
   mutate(max_value = max(mean_value),
-            test_value = mean_value) %>%
+         test_value = mean_value) %>%
   group_by(index_MDP_true,index_MDP_test)%>%
   mutate(r_EVPI=((max_value-test_value)/max_value))
 
@@ -96,14 +96,14 @@ rEVPI_data %>%
   ggplot(aes(x=index_MDP_true, y=r_EVPI,
              group=factor(index_MDP_test),
              col=factor(index_MDP_test))
-         )+
+  )+
   geom_line()
 
 
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 1
+index_MDP <- 25
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
@@ -114,7 +114,7 @@ voi_data_full_analysis <- voi_data_full %>%
 
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP_test)%>%
-  # filter(test_delta_crit==4)%>%
+  filter(test_delta_crit==4)%>%
   # filter(test_delta_crit==4)%>%
   mutate(index_MDP_test=paste( test_IPCC, "-",test_delta_crit, "-",index_MDP_test))
 
@@ -212,5 +212,5 @@ actions_deploy <- voi_data_full_analysis %>%
   theme_minimal()
 
 ggpubr::ggarrange(actions_dev,
-          actions_deploy,
-          ncol=1)
+                  actions_deploy,
+                  ncol=1)
