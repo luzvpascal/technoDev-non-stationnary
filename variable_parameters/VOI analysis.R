@@ -1,4 +1,4 @@
-voi_data_full <- read.csv("variable_parameters/res/voi_POMDP_pars_climate.csv",
+voi_data_full <- read.csv("res/voi_POMDP_pars_climate.csv",
                           header = FALSE)
 names(voi_data_full) <- c("time",
                           "tech_model",
@@ -103,7 +103,7 @@ rEVPI_data %>%
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 25
+index_MDP <- 1
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
@@ -114,7 +114,7 @@ voi_data_full_analysis <- voi_data_full %>%
 
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP_test)%>%
-  filter(test_delta_crit==4)%>%
+  # filter(test_delta_crit==4)%>%
   # filter(test_delta_crit==4)%>%
   mutate(index_MDP_test=paste( test_IPCC, "-",test_delta_crit, "-",index_MDP_test))
 

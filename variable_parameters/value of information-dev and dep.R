@@ -11,6 +11,7 @@ source("helper functions/simulations.R")
 source("helper functions/write_POMDPx.R")
 source("helper functions/functions variable parameters - MDP.R")
 source("variable_parameters/build transition and reward function.R")
+source("helper functions/simulations success failure.R")
 
 ##technology####
 p_dev <- 0.1**time_step
