@@ -67,7 +67,7 @@ for (test_scenario  in seq(length(transition_matrix_list))){
 
   alphas <- read_policyx2(OUTPUT_FILE)
 
-  for (true_scenario  in seq(length(transition_matrix_list))){
+  for (true_scenario  in seq(26,length(transition_matrix_list))){
     TRUE_MODEL <- 1
     print(paste(true_scenario, "-", test_scenario))
 
