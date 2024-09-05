@@ -63,7 +63,7 @@ alphas <- read_policyx2(OUTPUT_FILE)
 
 # Set the number of cores
 ncores <-detectCores()-2
-res_file <- "res/voi_POMDP_pars_climate.csv"
+res_file <- "res/voi_POMDP_pars_climate3.csv"
 test_scenario <- length(TR_FUNCTION_ECO)+1
 
 for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
@@ -83,8 +83,8 @@ for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
   ))
 
   # Run the simulations in parallel
-  results_failure <- parLapply(cl, 1:500, run_simulation_failure)
-  results_success <- parLapply(cl, 1:500, run_simulation_success)
+  results_failure <- parLapply(cl, 1:1000, run_simulation_failure)
+  results_success <- parLapply(cl, 1:1000, run_simulation_success)
 
   # Stop the cluster
   stopCluster(cl)
