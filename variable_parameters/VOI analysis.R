@@ -2,7 +2,9 @@ voi_data_full <- read.csv("res/voi_POMDP_pars_climate.csv",
                           header = FALSE)
 voi_data_full2 <- read.csv("res/voi_POMDP_pars_climate2.csv",
                           header = FALSE)
-voi_data_full <- rbind(voi_data_full, voi_data_full2)
+voi_data_full3 <- read.csv("res/voi_POMDP_pars_climate3.csv",
+                          header = FALSE)
+voi_data_full <- rbind(voi_data_full, voi_data_full2,voi_data_full3)
 names(voi_data_full) <- c("time",
                           "tech_model",
                           "mean_ecosystem",
@@ -78,6 +80,7 @@ best_policy <- rEVPI_data %>%
   group_by(index_MDP_test)%>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
+best_policy
 best_index <- best_policy$index_MDP_test[1]
 worst_index <- best_policy$index_MDP_test[nrow(best_policy)]
 
@@ -105,7 +108,7 @@ rEVPI_data %>%
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 29
+index_MDP <- 1
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
