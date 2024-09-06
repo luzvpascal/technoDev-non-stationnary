@@ -1,10 +1,21 @@
+# Load the parallel package
+library(parallel)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(ggpubr)
+## load global variables ####
+source("global variables.R")
 voi_data_full <- read.csv("res/voi_POMDP_pars_climate.csv",
                           header = FALSE)
 voi_data_full2 <- read.csv("res/voi_POMDP_pars_climate2.csv",
                           header = FALSE)
 voi_data_full3 <- read.csv("res/voi_POMDP_pars_climate3.csv",
                           header = FALSE)
-voi_data_full <- rbind(voi_data_full, voi_data_full2,voi_data_full3)
+voi_data_full4 <- read.csv("res/voi_POMDP_pars_climate4.csv",
+                           header = FALSE)
+voi_data_full <- rbind(voi_data_full, voi_data_full2,
+                       voi_data_full3,voi_data_full4)
 names(voi_data_full) <- c("time",
                           "tech_model",
                           "mean_ecosystem",
@@ -90,14 +101,14 @@ worst_index <- best_policy$index_MDP_test[nrow(best_policy)]
 box_plots <- rEVPI_data %>%
   filter(index_MDP_test %in% c(best_index,
                                worst_index,
-                               31))%>%
+                               31,32))%>%
   ggplot(aes(x=factor(index_MDP_test),y=r_EVPI))+
   geom_boxplot()+
   theme_minimal()
 box_plots
 rEVPI_data %>%
   filter(index_MDP_test %in% c(best_index,
-                               31))%>%
+                               31,32))%>%
   ggplot(aes(x=index_MDP_true, y=r_EVPI,
              group=factor(index_MDP_test),
              col=factor(index_MDP_test))
@@ -108,7 +119,7 @@ rEVPI_data %>%
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 1
+index_MDP <- 30
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,

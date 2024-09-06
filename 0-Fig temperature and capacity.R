@@ -32,6 +32,8 @@ temp_plot <- ggplot(data)+
             linewidth = 1.1)+
   labs(y=TeX("Temperature variation $(\\Delta T)$"),
        col="")+
+  scale_color_brewer(palette = "YlOrRd")+
+  scale_fill_brewer(palette = "YlOrRd")+
   guides(fill = "none")+
   theme(legend.position = c(0.15, 0.70))
 
@@ -60,14 +62,14 @@ K_eff_plot <- ggplot(K_eff_data)+
   labs(x=TeX("Temperature variation $(\\Delta T)$"),
        y=TeX("Maximum carrying capacity ($K$)"),
        col=TeX("Inflection\ntemperature\n$(\\Delta T_{crit})$"))+
-  scale_color_brewer(palette = "Spectral")+
+  scale_color_brewer(palette = "PuRd")+
   theme(legend.position = c(0.15, 0.3))
 
-total <- ggpubr::ggarrange(temp_plot,
-                  K_eff_plot,
-                  labels=c("A","B"))
+total <- ggpubr::ggarrange(temp_plot+ ggtitle("A"),
+                  K_eff_plot+ ggtitle("B"),
+                  ncol=1)
 ggsave(plot=total,
        filename= "figures/temperatures and capacity.svg",
-       width = 30,
-       height=10,
+       width = 15,
+       height=20,
        units ="cm")

@@ -1,6 +1,8 @@
 library(ggnewscale)
 library(latex2exp)
 library(ggplot2)
+source("global variables.R")
+source("helper functions/functions variable parameters - MDP.R")
 ## temperature data ####
 temperature_data <- read.csv("data IPCC/summarized_data.csv")
 temperature_data <- filter(temperature_data,
@@ -62,11 +64,7 @@ for (index in selected_scenarios){
     K_eff_low <- c(K_eff_low, K_function(K_min, K_max, delta_t_crit,
                                          tested_delta_low[t],sigmoid_bool_K))
     K_eff_up <- c(K_eff_up, K_function(K_min, K_max, delta_t_crit,
-<<<<<<< HEAD
                                  tested_delta_up[t],sigmoid_bool_K))
-=======
-                                       tested_delta_up[t],sigmoid_bool_K))
->>>>>>> a1dfb590ebdf3aa7228f2ef4e9d2f79647780bd7
   }
 
   K_eff_data <- rbind(K_eff_data,
@@ -86,7 +84,7 @@ K_eff_data <- K_eff_data %>%
 # Plot using facet_wrap with labeller
 K_eff_plot <- ggplot(K_eff_data) +
   geom_line(aes(x = time, y = K_eff)) +
-  facet_wrap(~scenario_label, ncol = 1) +
+  facet_wrap(~scenario_label, ncol=1) +
   theme_bw() +
   labs(x = TeX("Year"),
        y = TeX("Maximum carrying capacity ($K$)"))+
@@ -144,10 +142,13 @@ states <- voi_data_full %>%
   theme_bw()+
   lims(y=c(0,1))
 
-combined_plot <-ggpubr::ggarrange(K_eff_plot + ggtitle("A"),
-                                  states+ theme(legend.position = "none")+ ggtitle("B"),
-                                  actions_dev+ ggtitle("C"), #+ theme(legend.position = "none"),
-                                  widths =c(1,1,1.3),
+combined_plot <-ggpubr::ggarrange(K_eff_plot + ggtitle("A")+
+                                    scale_x_continuous(breaks=seq(2020,2100,20)),
+                                  states+ theme(legend.position = "none")+ ggtitle("B")+
+                                    scale_x_continuous(breaks=seq(2020,2100,20)),
+                                  actions_dev+ ggtitle("C")+
+                                    scale_x_continuous(breaks=seq(2020,2100,20)),#+ theme(legend.position = "none"),
+                                  widths =c(1,1,1.35),
                                   ncol=3)
 ggsave(plot = combined_plot,
        filename = "figures/known_dynamics.pdf",
