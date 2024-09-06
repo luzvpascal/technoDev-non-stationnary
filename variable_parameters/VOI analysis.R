@@ -1,5 +1,10 @@
 voi_data_full <- read.csv("res/voi_POMDP_pars_climate.csv",
                           header = FALSE)
+voi_data_full2 <- read.csv("res/voi_POMDP_pars_climate2.csv",
+                          header = FALSE)
+voi_data_full3 <- read.csv("res/voi_POMDP_pars_climate3.csv",
+                          header = FALSE)
+voi_data_full <- rbind(voi_data_full, voi_data_full2,voi_data_full3)
 names(voi_data_full) <- c("time",
                           "tech_model",
                           "mean_ecosystem",
@@ -75,9 +80,9 @@ best_policy <- rEVPI_data %>%
   group_by(index_MDP_test)%>%
   summarize(meanEVPI=mean(r_EVPI))%>%
   arrange(meanEVPI)
-best_index <- best_policy$index_MDP_test[2]
-best_index <- 1
-worst_index <- best_policy$index_MDP_test[31]
+best_policy
+best_index <- best_policy$index_MDP_test[1]
+worst_index <- best_policy$index_MDP_test[nrow(best_policy)]
 
 #######################################
 # boxplot rEVPI best, worst, POMDP#####
@@ -103,7 +108,7 @@ rEVPI_data %>%
 ######################
 # interpret solutions#
 ######################
-index_MDP <- 25
+index_MDP <- 1
 voi_data_full_analysis <- voi_data_full %>%
   filter(index_MDP_true==index_MDP)%>%
   filter(index_MDP_test %in% c(best_index,
@@ -112,11 +117,11 @@ voi_data_full_analysis <- voi_data_full %>%
                                31))%>%
   mutate(index_MDP_test=paste(index_MDP_test, "-", test_IPCC, "-",test_delta_crit))
 
-voi_data_full_analysis <- voi_data_full %>%
-  filter(index_MDP_true==index_MDP_test)%>%
-  filter(test_delta_crit==4)%>%
-  # filter(test_delta_crit==4)%>%
-  mutate(index_MDP_test=paste( test_IPCC, "-",test_delta_crit, "-",index_MDP_test))
+# voi_data_full_analysis <- voi_data_full %>%
+#   filter(index_MDP_true==index_MDP_test)%>%
+#   # filter(test_delta_crit==4)%>%
+#   # filter(test_delta_crit==4)%>%
+#   mutate(index_MDP_test=paste( test_IPCC, "-",test_delta_crit, "-",index_MDP_test))
 
 states <- voi_data_full_analysis %>%
   ggplot()+
