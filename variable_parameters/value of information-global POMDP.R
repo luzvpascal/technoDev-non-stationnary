@@ -70,7 +70,7 @@ ncores <-detectCores()-2
 res_file <- "res/voi_POMDP_pars_climate3.csv"
 test_scenario <- length(transition_matrix_list)+1
 
-for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
+for (true_scenario  in seq(length(transition_matrix_list))){
   if (true_scenario %in% keept_indexes){
     TRUE_MODEL <- which(keept_indexes==true_scenario)
     TR_FUNCTION_ECO[[2]] <- transition_matrix_list[[2]]
