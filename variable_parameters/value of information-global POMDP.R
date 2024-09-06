@@ -8,6 +8,8 @@ source("helper functions/read_solutions.R")
 source("helper functions/simulations.R")
 source("helper functions/simulations success failure.R")
 source("helper functions/write_POMDPx.R")
+source("global variables.R")
+source("variable_parameters/build transition and reward function.R")
 
 ##technology####
 p_dev <- 0.1**time_step
@@ -19,7 +21,9 @@ transition_failure <- list(diag(2),
 transition_tech <- list(transition_success, transition_failure)
 
 ##
-TR_FUNCTION_ECO <- transition_matrix_list
+keept_indexes <- c( 1 , 2,  7,  8, 13, 14, 15, 16,
+                    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
+TR_FUNCTION_ECO <- transition_matrix_list[keept_indexes]
 TR_FUNCTION_TECH <- transition_tech
 REW <- Reward
 GAMMA <- gamma
@@ -28,7 +32,7 @@ B_FULL_ECO <- c(rep(0, nrow(Reward)))
 B_FULL_ECO[N_ecosystem+1] <- 1
 B_FULL_TECH <- c(1, rep(0, length(tech_states)-1))
 
-B_PAR <- rep(1, length(transition_matrix_list))/length(transition_matrix_list)
+B_PAR <- rep(1, length(TR_FUNCTION_ECO))/length(TR_FUNCTION_ECO)
 B_PAR_TECH <- rep(1, length(transition_tech))/length(transition_tech)
 
 
@@ -52,7 +56,7 @@ OUTPUT_FILE <- paste0(file_name, ".policyx")
 
 cmd <- paste(path_to_sarsop,
              "--precision", 0.0000001,
-             "--timeout",600,
+             "--timeout",2000,
              "--output", OUTPUT_FILE,
              FILE,
              sep=" ")
@@ -64,10 +68,16 @@ alphas <- read_policyx2(OUTPUT_FILE)
 # Set the number of cores
 ncores <-detectCores()-2
 res_file <- "res/voi_POMDP_pars_climate3.csv"
-test_scenario <- length(TR_FUNCTION_ECO)+1
+test_scenario <- length(transition_matrix_list)+1
 
 for (true_scenario  in seq(length(TR_FUNCTION_ECO))){
-  TRUE_MODEL <- true_scenario
+  if (true_scenario %in% keept_indexes){
+    TRUE_MODEL <- which(keept_indexes==true_scenario)
+    TR_FUNCTION_ECO[[2]] <- transition_matrix_list[[2]]
+  } else {
+    TRUE_MODEL <- 2
+    TR_FUNCTION_ECO[[2]] <- transition_matrix_list[[true_scenario]]
+  }
    print(paste(TRUE_MODEL))
 
   # Create a cluster
