@@ -26,8 +26,8 @@ run_simulations <- FALSE
 
 experiments <- list(
       filtered_scenarios_2_models
-      # ,
-      # filtered_scenarios_4_models
+      ,
+      filtered_scenarios_4_models
       # , filtered_scenarios_16_models
 )
 

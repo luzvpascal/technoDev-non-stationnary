@@ -24,7 +24,7 @@ experiments <- list(filtered_scenarios_2_models
 
 for (index_exp in seq_along(experiments)){
   filtered_scenarios_now <- experiments[[index_exp]]
-  for (scen in climate_scenarios){
+  for (scen in climate_scenarios[1]){
     print(scen)
     start <- Sys.time()
     ## run simulations ####
@@ -87,7 +87,7 @@ for (index_exp in seq_along(experiments)){
                           "index_to_eco"
       ))
       # Run the simulations in parallel
-      results_sim <- parLapply(cl, 1:100, run_simulation_passive_AM)
+      results_sim <- parLapply(cl, 1:10, run_simulation_passive_AM)
 
       # Stop the cluster
       stopCluster(cl)

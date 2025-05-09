@@ -15,25 +15,19 @@ voi_data_uncertain_response <- read.csv(
 
 ## run experiments ####
 voi_solution <- data.frame()
-experiments_list_r <- list()
-experiments_list_K <- list()
 
-experiments_r <- combn(seq(1, 2.5,by=0.3),1)
-experiments_r <- round(experiments_r, digits=3)
-experiments_K <- combn(seq(1, 2.5,by=0.3),2)
-experiments_K <- round(experiments_K, digits=3)
 names_test <-  names(voi_data_uncertain_response)[grep("_test$", names(voi_data_uncertain_response))]
 
-experiments <- expand.grid(delta_t_crit_r=experiments_r,
-                           delta_t_crit_K=experiments_K)
+experiments <- expand.grid(delta_t_crit_r=round(tested_delta_t_crit_r,digits=3),
+                           delta_t_crit_K=round(tested_delta_t_crit_K,digits=3))
 experiments_test <- experiments
 N_experiments <- 1000
 
 tested_k <- c(2,4,20)
 list_highest_EVPI <- rep(0,length(tested_k))
 list_indexes <- list()
+start <- Sys.time()
 for (index_k in seq_along(tested_k)){
-# for (k in c(seq(2,16,2),c(20,30,50,100))){
   k <- tested_k[index_k]
   print(k)
   for (i in seq(N_experiments)){
@@ -86,7 +80,8 @@ for (index_k in seq_along(tested_k)){
   }
 }
 
-
+end <- Sys.time()
+print(end-start)
 # write.csv(voi_solution,  paste0("res_onlyK/VOI_uncertain_response_gamma_",gamma,".csv"), row.names = FALSE)
 write.csv(voi_solution,  paste0("res/VOI_uncertain_response_gamma_",gamma,".csv"), row.names = FALSE)
 
@@ -162,6 +157,7 @@ ggsave(plot = plot,
        height = 15,
        units = "cm")
 
+##############################
 voi_solution%>%
   # filter(k==100)%>%
   filter(k==4)%>%
@@ -169,3 +165,5 @@ voi_solution%>%
   group_by(scen)%>%
   slice_max(order_by = rEVPI)
   # slice_max(order_by = mean_EVPI)
+
+experiments[list_indexes[[2]],]

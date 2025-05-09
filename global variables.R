@@ -69,8 +69,8 @@ filtered_scenarios <- all_scenarios %>%
   ungroup()
 
 #for 2 models
-filtered_scenarios_2_models <- expand.grid(
-  delta_t_crit_r = c(2.5),
+filtered_scenarios_2_models <- data.frame(
+  delta_t_crit_r = c(1.6,2.5),
   delta_t_crit_K =  c(1,2.5),
   sigmoid_bool_r = TRUE,
   sigmoid_bool_K = TRUE,
@@ -79,8 +79,8 @@ filtered_scenarios_2_models <- expand.grid(
 
 #for 4 models
 filtered_scenarios_4_models <- expand.grid(
-  delta_t_crit_r = c(1,2.5),
-  delta_t_crit_K =  c(1.6,2.5),
+  delta_t_crit_r = c(2.35,1.75,1.90,2.5),
+  delta_t_crit_K =  c(1,2.2,2.2,2.35),
   sigmoid_bool_r = TRUE,
   sigmoid_bool_K = TRUE,
   dep_effect = c(1),
@@ -104,4 +104,4 @@ scenarios_uncertain_climate <- expand.grid(
   dep_effect = c(1),
   scenario = climate_scenarios)
 # ncores####
-ncores <- parallel::detectCores()-2
+ncores <- parallel::detectCores()
