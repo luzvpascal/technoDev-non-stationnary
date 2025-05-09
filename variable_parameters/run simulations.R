@@ -2,8 +2,6 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(ggpubr)
-source("deployment POMDP/read_solutions.R")
-source("variable_parameters/simulations.R")
 alphas <- read_policyx2(OUTPUT_FILE)
 
 data <- trajectory(state_prior_eco = tuple_to_index(1,

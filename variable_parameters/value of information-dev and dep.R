@@ -38,10 +38,12 @@ file_name <- paste0("pomdpx/POMDPscenario")
 # Set the number of cores
 ncores <-detectCores()-2
 res_file <- "res/voi_POMDP_pars_climate.csv"
+res_file_sim <- "res/apply"
 
 for (test_scenario  in seq(length(transition_matrix_list))){
   ## solve POMDP for assumed scenario ####
   FILE <- paste0(file_name, test_scenario, ".pomdpx")
+  OUTPUT_FILE <- paste0(file_name, test_scenario,".policyx")
 
   write_full_POMDP(list(transition_matrix_list[[test_scenario]]),
                    TR_FUNCTION_TECH,
@@ -55,19 +57,17 @@ for (test_scenario  in seq(length(transition_matrix_list))){
 
   path_to_sarsop <- system.file("bin/x64", "pomdpsol.exe", package="sarsop")
 
-  OUTPUT_FILE <- paste0(file_name, test_scenario,".policyx")
-
   cmd <- paste(path_to_sarsop,
                "--precision", 0.0000001,
-               "--timeout",60,
+               "--timeout",300,
                "--output", OUTPUT_FILE,
                FILE,
                sep=" ")
   system(cmd)
-
   alphas <- read_policyx2(OUTPUT_FILE)
 
-  for (true_scenario  in seq(26,length(transition_matrix_list))){
+
+  for (true_scenario in test_scenario){
     TRUE_MODEL <- 1
     print(paste(true_scenario, "-", test_scenario))
 
@@ -101,6 +101,15 @@ for (test_scenario  in seq(length(transition_matrix_list))){
 
     results <- rbind(results_success,
                      results_failure)
+
+    write.table(results, paste(res_file_sim,"_",test_scenario, "_on_",
+                                    true_scenario, ".csv",sep=""),
+                append = TRUE,
+                sep = ",",
+                col.names = FALSE,
+                row.names = FALSE,
+                quote = FALSE)
+
     summ_results <- results %>%
       rowwise() %>%
       mutate(state_year=index_to_year(state_eco, N_ecosystem+1),

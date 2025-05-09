@@ -5,7 +5,7 @@ library(latex2exp)
 library(MDPtoolbox)
 
 #load necessary functions ####
-source("variable_parameters/helper functions/functions variable parameters - MDP.R")
+source("helper functions/functions variable parameters - MDP.R")
 
 ## load global variables ####
 source("global variables.R")
@@ -41,8 +41,8 @@ for (index_MDP_true in seq(length(transition_matrix_list))){
                                             solution_list[[index_MDP_test]]$policy)
     voi_data_current <- data.frame(index_MDP_true=index_MDP_true,
                                    index_MDP_test=index_MDP_test,
-                                   max_value=solution_list[[index_MDP_true]]$V[length(ecosystem_states)],
-                                   test_value=solution_test[length(ecosystem_states)]
+                                   max_value=solution_list[[index_MDP_true]]$V[tuple_to_index(1,8, N_ecosystem + 1)],
+                                   test_value=solution_test[tuple_to_index(1,8, N_ecosystem + 1)]
     )
 
     voi_data <- rbind(voi_data,

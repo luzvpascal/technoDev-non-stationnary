@@ -9,7 +9,7 @@ ecosystem_dynamics <- function(x_t, r, K, time_step){
 r_function <- function(r_min, r_max, delta_t_crit,
                        delta_t, sigmoid_bool){
   if (sigmoid_bool){
-    r_min + (r_max-r_min)*(1-1/(1+exp(-5*(delta_t - delta_t_crit/2))))
+    r_min + (r_max-r_min)*(1-1/(1+exp(-5*(delta_t - delta_t_crit))))
   } else {
     r_max
   }
@@ -74,7 +74,7 @@ transition_function_ecosystem <- function(ecosystem_states,
                                           DEP_EFFECT,
                                           sik_bar,
                                           sigma_eco){
-  min_prob <- 0
+  min_prob <- 0.001
   N_ecosystem <- length(ecosystem_states)
   transition_ecosystem <- list()
   for (index_action in seq(length(DEP_EFFECT))){
@@ -347,6 +347,7 @@ reward_function <- function(ecosystem_states,
         reward_matrix[index, action_index] <- reward_action[i]
       }
     }
+
   }
   reward_matrix
 }

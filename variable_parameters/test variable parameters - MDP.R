@@ -3,7 +3,8 @@ library(tidyverse)
 library(dplyr)
 library(latex2exp)
 library(MDPtoolbox)
-source("variable_parameters/functions variable parameters - MDP.R")
+source("helper functions/functions variable parameters - MDP.R")
+
 ## discrete ecosystem states ####
 N_ecosystem <- 10
 ecosystem_states <- seq(0,1,1/N_ecosystem)
@@ -20,16 +21,17 @@ temperature_states <- seq(0,Temp_max,
 time_step <- 1
 # time_states <- seq(0, horizon, time_step)
 
+
 ## growth rate parameters ####
-r_min <- -0.2
+r_min <- 0
 r_max <- 0.2
 delta_t_crit_r <- 1
-sigmoid_bool_r <- FALSE
+sigmoid_bool_r <- TRUE
 
 ## capacity parameters ####
 K_min <- 0
 K_max <- 1
-delta_t_crit_K <- 1.5
+delta_t_crit_K <- 1
 sigmoid_bool_K <- TRUE
 
 ## actions parameters ####
@@ -91,17 +93,17 @@ K_eff_plot <- ggplot(K_eff_data)+
 K_eff_plot
 #test functions
 sik_bar <- sik_bar_function(ecosystem_states,
-                 temperature_states,
-                 DEP_EFFECT,
-                 r_min,
-                 r_max,
-                 delta_t_crit_r,
-                 sigmoid_bool_r,
-                 K_min,
-                 K_max,
-                 delta_t_crit_K,
-                 sigmoid_bool_K,
-                 time_step)
+                   temperature_states,
+                   DEP_EFFECT,
+                   r_min,
+                   r_max,
+                   delta_t_crit_r,
+                   sigmoid_bool_r,
+                   K_min,
+                   K_max,
+                   delta_t_crit_K,
+                   sigmoid_bool_K,
+                   time_step)
 
 # Convert the array into a data frame
 sik_bar_df <- as.data.frame.table(sik_bar)
