@@ -67,7 +67,7 @@ trajectory <- function(state_prior_eco,
       state_eco <- c(state_eco, rep(1, Tmax+1-i))
       current_state <- c(current_state, rep(current_state[i], Tmax+1-i))
       actions <- c(actions, rep(1, Tmax+1-i))
-      V <- c(V, rep(V[i], Tmax+1-i))
+      V <- c(V, rep(V[i-1], Tmax+1-i))
       break
     }
 
@@ -96,6 +96,9 @@ trajectory <- function(state_prior_eco,
       V <- c(V, V[i-1] + disc**(i)*reward[state_eco[i], actions[i]])
     }
 
+    if (is.na(V[i])){
+      break
+    }
     #next observation given belief, action and obs
     set.seed(as.integer((as.double(Sys.time()) *i*1000 + Sys.getpid())%%2^31))
 

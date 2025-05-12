@@ -21,16 +21,16 @@ names_test <-  names(voi_data_uncertain_response)[grep("_test$", names(voi_data_
 experiments <- expand.grid(delta_t_crit_r=round(tested_delta_t_crit_r,digits=3),
                            delta_t_crit_K=round(tested_delta_t_crit_K,digits=3))
 experiments_test <- experiments
-N_experiments <- 1000
+N_experiments <- 5000
 
-tested_k <- c(2,4,20)
+tested_k <- c(2,4,10,16,20,40,100)
 list_highest_EVPI <- rep(0,length(tested_k))
 list_indexes <- list()
 start <- Sys.time()
 for (index_k in seq_along(tested_k)){
   k <- tested_k[index_k]
   print(k)
-  for (i in seq(N_experiments)){
+  for (i in seq(min(N_experiments, choose(nrow(experiments),k)))){
     index_exp <- sample(nrow(experiments), k,replace = FALSE)
   # for (index_exp in seq(ncol(exp_indexes))){
     experiments_now <- experiments[index_exp,]
@@ -166,4 +166,4 @@ voi_solution%>%
   slice_max(order_by = rEVPI)
   # slice_max(order_by = mean_EVPI)
 
-experiments[list_indexes[[2]],]
+experiments[list_indexes[[3]],]
